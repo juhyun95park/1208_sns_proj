@@ -41,6 +41,15 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
+  /* Instagram 컬러 스키마 (PRD.md 참고) */
+  --color-instagram-blue: #0095f6;
+  --color-like: #ed4956;
+  --color-instagram-bg: #fafafa;
+  --color-instagram-card: #ffffff;
+  --color-instagram-border: #dbdbdb;
+  --color-text-primary: #262626;
+  --color-text-secondary: #8e8e8e;
 }
 
 :root {
@@ -76,6 +85,15 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Instagram 컬러 변수 (PRD.md 참고) */
+  --instagram-blue: #0095f6;
+  --like: #ed4956;
+  --instagram-bg: #fafafa;
+  --instagram-card: #ffffff;
+  --instagram-border: #dbdbdb;
+  --text-primary: #262626;
+  --text-secondary: #8e8e8e;
 }
 
 .dark {
