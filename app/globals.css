@@ -96,6 +96,20 @@
   --text-secondary: #8e8e8e;
 }
 
+/* Shimmer 애니메이션 (Skeleton UI용) */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
