@@ -110,6 +110,34 @@
   animation: shimmer 2s infinite;
 }
 
+/* 모던한 그림자 유틸리티 */
+.shadow-soft {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.shadow-medium {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.shadow-large {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* 부드러운 전환 효과 */
+.transition-smooth {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 호버 효과 */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
@@ -149,9 +177,34 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-gradient-to-b from-[#fafafa] to-white text-foreground;
+    background-attachment: fixed;
   }
   main {
     @apply max-w-7xl mx-auto pt-16 px-4;
   }
+}
+
+/* 부드러운 스크롤 */
+html {
+  scroll-behavior: smooth;
+}
+
+/* 커스텀 스크롤바 (선택사항) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #fafafa;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #dbdbdb;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #8e8e8e;
 }

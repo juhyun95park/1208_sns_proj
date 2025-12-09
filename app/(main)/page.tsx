@@ -13,7 +13,7 @@ import { PostFeed } from '@/components/post/post-feed';
 
 export default function HomePage() {
   return (
-    <div className="w-full">
+    <div className="w-full min-h-screen bg-gradient-to-b from-[#fafafa] to-white">
       <PostFeed />
     </div>
   );

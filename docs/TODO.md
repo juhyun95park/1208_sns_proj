@@ -254,16 +254,28 @@
 
 ## 13. 최종 마무리
 
+- [x] Next.js 메타데이터 파일 생성
+  - [x] `app/not-found.tsx` - 404 페이지 컴포넌트
+  - [x] `app/robots.ts` - 검색 엔진 크롤러 설정
+  - [x] `app/sitemap.ts` - 사이트맵 생성
+  - [x] `app/manifest.ts` - PWA 매니페스트
+- [x] 접근성 개선
+  - [x] 키보드 네비게이션 (Escape, Enter/Space, Tab)
+  - [x] ARIA 레이블 보완 (aria-label, aria-describedby, aria-labelledby)
+  - [x] 이미지 alt 텍스트 개선
+  - [x] 폼 요소 접근성 속성 추가
+  - [x] 모달 접근성 속성 추가
+- [x] 코드 정리
+  - [x] 디버깅 로그 정리 (개발 환경에서만 실행)
+  - [x] console.group, console.log 조건부 처리
+  - [x] console.error는 유지 (에러 추적 필요)
+- [x] 프로덕션 빌드 최적화
+  - [x] `next.config.ts` 최적화 (compress, poweredByHeader)
+  - [x] Supabase 이미지 도메인 추가 (remotePatterns)
 - [ ] 모바일/태블릿 반응형 테스트
-  - [ ] 다양한 화면 크기에서 테스트
-  - [ ] 터치 인터랙션 테스트
-- [ ] 접근성 검토
-  - [ ] 키보드 네비게이션
-  - [ ] ARIA 레이블
-- [ ] 코드 정리
-  - [ ] 불필요한 주석 제거
-  - [ ] 코드 포맷팅
+  - [ ] 다양한 화면 크기에서 테스트 (375px, 414px, 768px, 1024px, 1280px, 1920px)
+  - [ ] 터치 인터랙션 테스트 (더블탭, 스와이프)
 - [ ] 배포 준비
-  - [ ] 환경 변수 설정
-  - [ ] Vercel 배포 설정
-  - [ ] 프로덕션 빌드 테스트
+  - [ ] 환경 변수 설정 (Vercel)
+  - [ ] 프로덕션 빌드 테스트 (`pnpm build`, `pnpm start`)
+  - [ ] 주요 기능 동작 확인

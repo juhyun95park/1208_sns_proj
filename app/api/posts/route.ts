@@ -185,13 +185,14 @@ export async function POST(request: NextRequest) {
 
     // Storage URL 검증: Supabase Storage URL 형식인지 확인
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const bucketName = process.env.NEXT_PUBLIC_STORAGE_BUCKET || 'posts';
     if (supabaseUrl) {
       const storageUrlPattern = new RegExp(
-        `^${supabaseUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/storage/v1/object/public/posts/`
+        `^${supabaseUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/storage/v1/object/public/${bucketName}/`
       );
       if (!storageUrlPattern.test(image_url)) {
         return NextResponse.json(
-          { error: 'Invalid image URL. Must be a valid Supabase Storage URL for the posts bucket.' },
+          { error: `Invalid image URL. Must be a valid Supabase Storage URL for the ${bucketName} bucket.` },
           { status: 400 }
         );
       }
@@ -217,10 +218,12 @@ export async function POST(request: NextRequest) {
 
     const supabase = createClerkSupabaseClient();
 
-    console.group('게시물 생성 API');
-    console.log('Clerk User ID:', clerkUserId);
-    console.log('Image URL:', image_url);
-    console.log('Caption length:', caption?.length || 0);
+    if (process.env.NODE_ENV === 'development') {
+      console.group('게시물 생성 API');
+      console.log('Clerk User ID:', clerkUserId);
+      console.log('Image URL:', image_url);
+      console.log('Caption length:', caption?.length || 0);
+    }
 
     // Clerk user ID로 Supabase user 조회
     const { data: user, error: userError } = await supabase
@@ -237,7 +240,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('User found:', user.id);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('User found:', user.id);
+    }
 
     // 게시물 생성
     const { data: post, error: postError } = await supabase
@@ -272,7 +277,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('Post created:', post.id);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Post created:', post.id);
+    }
 
     // post_stats 뷰에서 게시물 정보 조회 (좋아요 수, 댓글 수 포함)
     const { data: postStat, error: statsError } = await supabase
@@ -334,8 +341,10 @@ export async function POST(request: NextRequest) {
       is_liked: false,
     };
 
-    console.log('Post created successfully:', postWithStats.id);
-    console.groupEnd();
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Post created successfully:', postWithStats.id);
+      console.groupEnd();
+    }
 
     return NextResponse.json({ post: postWithStats }, { status: 201 });
   } catch (error) {

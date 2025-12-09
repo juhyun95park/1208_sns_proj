@@ -40,8 +40,8 @@ export function BottomNav() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[50px] bg-white border-t border-[#dbdbdb] z-20">
-      <div className="flex items-center justify-around h-full">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[56px] bg-white/95 backdrop-blur-md border-t border-[#dbdbdb]/50 z-20 shadow-large">
+      <div className="flex items-center justify-around h-full px-2">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
@@ -51,13 +51,18 @@ export function BottomNav() {
             <div
               className={`
                 flex flex-col items-center justify-center
-                w-full h-full
-                ${isActive ? 'text-[#262626]' : 'text-[#262626] opacity-60'}
+                w-full h-full rounded-xl
+                transition-all duration-200
+                ${
+                  isActive
+                    ? 'text-[#262626] bg-[#fafafa]'
+                    : 'text-[#262626] opacity-60 hover:opacity-100 hover:bg-[#fafafa]/50'
+                }
               `}
             >
               <Icon
-                className={`w-6 h-6 ${
-                  isActive ? 'stroke-[2.5]' : 'stroke-2'
+                className={`w-6 h-6 transition-transform duration-200 ${
+                  isActive ? 'stroke-[2.5] scale-110' : 'stroke-2'
                 }`}
               />
             </div>

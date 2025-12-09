@@ -58,8 +58,8 @@ export function ProfileHeader({
       {/* Desktop 레이아웃 */}
       <div className="hidden md:flex md:items-start md:gap-8 md:px-4 md:py-8">
         {/* 프로필 이미지 */}
-        <div className="w-[150px] h-[150px] rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
-          <span className="text-4xl font-semibold text-[#262626]">
+        <div className="w-[150px] h-[150px] rounded-full bg-gradient-to-br from-[#0095f6] via-[#833ab4] to-[#fcb045] flex items-center justify-center overflow-hidden flex-shrink-0 shadow-large ring-4 ring-white">
+          <span className="text-4xl font-semibold text-white drop-shadow-md">
             {user.name.charAt(0).toUpperCase()}
           </span>
         </div>
@@ -72,7 +72,7 @@ export function ProfileHeader({
             {isOwnProfile ? (
               <button
                 type="button"
-                className="px-4 py-1.5 text-sm font-semibold border border-[#dbdbdb] rounded-md text-[#262626] hover:bg-[#fafafa]"
+                className="px-4 py-1.5 text-sm font-semibold border border-[#dbdbdb] rounded-lg text-[#262626] hover:bg-[#fafafa] hover:border-[#262626] transition-all duration-200 shadow-soft hover:shadow-medium"
               >
                 프로필 편집
               </button>
@@ -119,8 +119,8 @@ export function ProfileHeader({
       <div className="md:hidden px-4 py-4">
         {/* 프로필 이미지 및 사용자명 */}
         <div className="flex items-center gap-4 mb-4">
-          <div className="w-[90px] h-[90px] rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
-            <span className="text-2xl font-semibold text-[#262626]">
+          <div className="w-[90px] h-[90px] rounded-full bg-gradient-to-br from-[#0095f6] via-[#833ab4] to-[#fcb045] flex items-center justify-center overflow-hidden flex-shrink-0 shadow-medium ring-2 ring-white">
+            <span className="text-2xl font-semibold text-white drop-shadow-md">
               {user.name.charAt(0).toUpperCase()}
             </span>
           </div>

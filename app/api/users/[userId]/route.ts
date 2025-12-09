@@ -22,8 +22,10 @@ export async function GET(
     const { userId } = await params;
     const supabase = createClerkSupabaseClient();
 
-    console.group('사용자 정보 조회 API');
-    console.log('요청된 userId:', userId);
+    if (process.env.NODE_ENV === 'development') {
+      console.group('사용자 정보 조회 API');
+      console.log('요청된 userId:', userId);
+    }
 
     // userId가 UUID 형식인지 확인 (Supabase user ID)
     // UUID 형식: 8-4-4-4-12 (총 36자)
@@ -59,7 +61,9 @@ export async function GET(
       );
     }
 
-    console.log('사용자 정보 조회 성공:', userStats.user_id);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('사용자 정보 조회 성공:', userStats.user_id);
+    }
 
     // 현재 로그인한 사용자가 해당 사용자를 팔로우하는지 확인
     let isFollowing = false;
@@ -102,8 +106,10 @@ export async function GET(
       },
     };
 
-    console.log('응답 데이터:', userResponse);
-    console.groupEnd();
+    if (process.env.NODE_ENV === 'development') {
+      console.log('응답 데이터:', userResponse);
+      console.groupEnd();
+    }
 
     return NextResponse.json(userResponse);
   } catch (error) {

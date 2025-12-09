@@ -2,18 +2,28 @@
 -- posts 버킷: 게시물 이미지 저장용 (공개 읽기)
 
 -- 1. posts 버킷 생성 (이미 존재하면 무시됨)
-INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-VALUES (
-  'posts',
-  'posts',
-  true,  -- 공개 읽기 버킷
-  5242880,  -- 5MB 제한 (5 * 1024 * 1024)
-  ARRAY['image/jpeg', 'image/jpg', 'image/png', 'image/webp']  -- 이미지 파일만 허용
-)
-ON CONFLICT (id) DO UPDATE SET
-  public = true,
-  file_size_limit = 5242880,
-  allowed_mime_types = ARRAY['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+DO $$
+BEGIN
+  -- 버킷이 존재하지 않으면 생성
+  IF NOT EXISTS (SELECT 1 FROM storage.buckets WHERE id = 'posts') THEN
+    INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+    VALUES (
+      'posts',
+      'posts',
+      true,  -- 공개 읽기 버킷
+      5242880,  -- 5MB 제한 (5 * 1024 * 1024)
+      ARRAY['image/jpeg', 'image/jpg', 'image/png', 'image/webp']  -- 이미지 파일만 허용
+    );
+  ELSE
+    -- 버킷이 이미 존재하면 설정 업데이트
+    UPDATE storage.buckets
+    SET
+      public = true,
+      file_size_limit = 5242880,
+      allowed_mime_types = ARRAY['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+    WHERE id = 'posts';
+  END IF;
+END $$;
 
 -- 기존 정책 삭제 (재실행 시 충돌 방지)
 DROP POLICY IF EXISTS "Authenticated users can upload posts" ON storage.objects;

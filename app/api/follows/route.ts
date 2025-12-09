@@ -41,9 +41,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.group('팔로우 추가 API');
-    console.log('Clerk User ID:', clerkUserId);
-    console.log('Following ID:', following_id);
+    if (process.env.NODE_ENV === 'development') {
+      console.group('팔로우 추가 API');
+      console.log('Clerk User ID:', clerkUserId);
+      console.log('Following ID:', following_id);
+    }
 
     const supabase = createClerkSupabaseClient();
 
@@ -117,8 +119,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('팔로우 추가 성공');
-    console.groupEnd();
+    if (process.env.NODE_ENV === 'development') {
+      console.log('팔로우 추가 성공');
+      console.groupEnd();
+    }
 
     return NextResponse.json<FollowResponse>(
       {
@@ -166,9 +170,11 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    console.group('팔로우 제거 API');
-    console.log('Clerk User ID:', clerkUserId);
-    console.log('Following ID:', following_id);
+    if (process.env.NODE_ENV === 'development') {
+      console.group('팔로우 제거 API');
+      console.log('Clerk User ID:', clerkUserId);
+      console.log('Following ID:', following_id);
+    }
 
     const supabase = createClerkSupabaseClient();
 
@@ -202,8 +208,10 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    console.log('팔로우 제거 성공');
-    console.groupEnd();
+    if (process.env.NODE_ENV === 'development') {
+      console.log('팔로우 제거 성공');
+      console.groupEnd();
+    }
 
     return NextResponse.json<FollowResponse>(
       {

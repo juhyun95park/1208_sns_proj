@@ -141,9 +141,11 @@ export async function DELETE(
       );
     }
 
-    console.group('게시물 삭제 API');
-    console.log('Post ID:', postId);
-    console.log('Clerk User ID:', clerkUserId);
+    if (process.env.NODE_ENV === 'development') {
+      console.group('게시물 삭제 API');
+      console.log('Post ID:', postId);
+      console.log('Clerk User ID:', clerkUserId);
+    }
 
     const supabase = createClerkSupabaseClient();
 
@@ -186,7 +188,9 @@ export async function DELETE(
       );
     }
 
-    console.log('게시물 소유자 확인 완료');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('게시물 소유자 확인 완료');
+    }
 
     // Storage에서 이미지 파일 삭제
     if (post.image_url) {
@@ -197,10 +201,13 @@ export async function DELETE(
         const urlParts = post.image_url.split('/storage/v1/object/public/');
         if (urlParts.length === 2) {
           const filePath = urlParts[1]; // posts/user_xxx/filename.jpg
-          console.log('Storage 파일 경로:', filePath);
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Storage 파일 경로:', filePath);
+          }
 
+          const bucketName = process.env.NEXT_PUBLIC_STORAGE_BUCKET || 'posts';
           const { error: storageError } = await supabase.storage
-            .from('posts')
+            .from(bucketName)
             .remove([filePath]);
 
           if (storageError) {
@@ -208,7 +215,9 @@ export async function DELETE(
             // Storage 삭제 실패해도 데이터베이스 삭제는 진행
             // (이미지는 나중에 정리 가능)
           } else {
-            console.log('Storage 파일 삭제 성공');
+            if (process.env.NODE_ENV === 'development') {
+              console.log('Storage 파일 삭제 성공');
+            }
           }
         } else {
           console.warn('이미지 URL 형식이 예상과 다름:', post.image_url);
@@ -234,8 +243,10 @@ export async function DELETE(
       );
     }
 
-    console.log('게시물 삭제 성공');
-    console.groupEnd();
+    if (process.env.NODE_ENV === 'development') {
+      console.log('게시물 삭제 성공');
+      console.groupEnd();
+    }
 
     return NextResponse.json(
       { success: true, message: 'Post deleted successfully' },

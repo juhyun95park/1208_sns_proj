@@ -97,13 +97,13 @@ export function FollowButton({
     if (isFollowing) {
       if (isHovering) {
         // 호버 시 빨간 테두리
-        return 'bg-white text-[#ed4956] border border-[#ed4956] hover:bg-white';
+        return 'bg-white text-[#ed4956] border-2 border-[#ed4956] hover:bg-[#ed4956]/5 shadow-soft hover:shadow-medium';
       }
       // 팔로우 중: 회색 배경
-      return 'bg-[#262626] text-white hover:bg-[#262626]/90';
+      return 'bg-[#262626] text-white hover:bg-[#262626]/90 shadow-soft hover:shadow-medium';
     }
-    // 미팔로우: 파란색 배경
-    return 'bg-[#0095f6] text-white hover:bg-[#0095f6]/90';
+    // 미팔로우: 파란색 그라데이션 배경
+    return 'bg-gradient-to-r from-[#0095f6] to-[#0084d4] text-white hover:from-[#0084d4] hover:to-[#0073c2] shadow-soft hover:shadow-medium';
   };
 
   return (
@@ -113,7 +113,7 @@ export function FollowButton({
       disabled={isLoading || disabled}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
-      className={`font-semibold px-6 ${getButtonStyles()}`}
+      className={`font-semibold px-6 py-2.5 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 ${getButtonStyles()}`}
     >
       {isLoading ? (
         <>

@@ -95,6 +95,8 @@ export function CommentForm({
     }
   };
 
+  const errorId = error ? 'comment-error' : undefined;
+
   return (
     <form onSubmit={handleSubmit} className={`flex items-center gap-2 ${className}`}>
       <textarea
@@ -110,6 +112,10 @@ export function CommentForm({
           minHeight: '20px',
           maxHeight: '80px',
         }}
+        aria-label="댓글 입력"
+        aria-describedby={errorId}
+        aria-invalid={!!error}
+        aria-required="false"
       />
       {content.trim() && (
         <Button
@@ -118,12 +124,18 @@ export function CommentForm({
           size="sm"
           disabled={isSubmitting || !content.trim()}
           className="text-[#0095f6] hover:text-[#0095f6] hover:bg-transparent px-2 py-1 h-auto font-semibold disabled:opacity-50"
+          aria-label="댓글 게시"
         >
           {isSubmitting ? '게시 중...' : '게시'}
         </Button>
       )}
       {error && (
-        <p className="text-xs text-[#ed4956] mt-1 absolute bottom-0 left-0">
+        <p
+          id={errorId}
+          className="text-xs text-[#ed4956] mt-1 absolute bottom-0 left-0"
+          role="alert"
+          aria-live="polite"
+        >
           {error}
         </p>
       )}

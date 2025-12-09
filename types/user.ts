@@ -26,3 +26,6 @@ export interface FollowResponse {
   is_following: boolean;
 }
 
+export interface SearchResponse {
+  users: UserWithStats[];
+}

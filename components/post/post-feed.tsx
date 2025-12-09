@@ -23,7 +23,20 @@ interface PostFeedProps {
 }
 
 export function PostFeed({ initialPosts = [] }: PostFeedProps) {
-  const [posts, setPosts] = useState<PostWithStats[]>(initialPosts);
+  // 초기 게시물도 중복 제거
+  const [posts, setPosts] = useState<PostWithStats[]>(() => {
+    const uniquePosts: PostWithStats[] = [];
+    const seenIds = new Set<string>();
+    
+    for (const post of initialPosts) {
+      if (!seenIds.has(post.id)) {
+        seenIds.add(post.id);
+        uniquePosts.push(post);
+      }
+    }
+    
+    return uniquePosts;
+  });
   const [commentsMap, setCommentsMap] = useState<
     Record<string, CommentWithUser[]>
   >({});
@@ -118,28 +131,56 @@ export function PostFeed({ initialPosts = [] }: PostFeedProps) {
 
   // 게시물 로드 함수
   const loadPosts = useCallback(async (pageNum: number) => {
-    if (loading) return;
+    if (loading) {
+      console.log('PostFeed: Already loading, skipping...');
+      return;
+    }
 
+    console.log(`PostFeed: Loading posts page ${pageNum}...`);
     setLoading(true);
     setError(null);
 
     try {
       const response = await fetch(`/api/posts?page=${pageNum}&limit=10`);
+      console.log('PostFeed: API response status:', response.status);
+      
       if (!response.ok) {
-        throw new Error('Failed to fetch posts');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to fetch posts');
       }
 
       const data = await response.json();
+      console.log('PostFeed: Received data:', { 
+        postsCount: data.posts?.length || 0, 
+        hasMore: data.hasMore 
+      });
+      
       const newPosts = data.posts || [];
 
       if (newPosts.length === 0) {
+        console.log('PostFeed: No posts found');
         setHasMore(false);
       } else {
-        setPosts((prev) => [...prev, ...newPosts]);
+        // 중복 제거: 기존 게시물 ID Set을 사용하여 중복 필터링
+        setPosts((prev) => {
+          const existingIds = new Set(prev.map((p) => p.id));
+          const uniqueNewPosts = newPosts.filter(
+            (post: PostWithStats) => !existingIds.has(post.id)
+          );
+          
+          if (uniqueNewPosts.length === 0) {
+            console.log('PostFeed: All new posts are duplicates, skipping...');
+            return prev;
+          }
+          
+          console.log(`PostFeed: Adding ${uniqueNewPosts.length} new posts (${newPosts.length - uniqueNewPosts.length} duplicates filtered)`);
+          return [...prev, ...uniqueNewPosts];
+        });
         setPage((prev) => prev + 1);
         setHasMore(data.hasMore);
 
-        // 각 게시물의 댓글 로드
+        // 각 게시물의 댓글 로드 (중복 제거된 게시물만)
+        // setPosts의 함수형 업데이트 내에서 처리하므로 여기서는 모든 새 게시물의 댓글 로드
         newPosts.forEach((post: PostWithStats) => {
           if (post.comments_count > 0) {
             loadComments(post.id);
@@ -147,8 +188,9 @@ export function PostFeed({ initialPosts = [] }: PostFeedProps) {
         });
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-      console.error('Error loading posts:', err);
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      console.error('PostFeed: Error loading posts:', err);
     } finally {
       setLoading(false);
     }
@@ -156,7 +198,8 @@ export function PostFeed({ initialPosts = [] }: PostFeedProps) {
 
   // 초기 로드 (initialPosts가 없는 경우)
   useEffect(() => {
-    if (initialPosts.length === 0 && page === 1) {
+    if (initialPosts.length === 0 && page === 1 && !loading) {
+      console.log('PostFeed: Initial load starting...');
       loadPosts(1);
     } else if (initialPosts.length > 0) {
       // initialPosts의 댓글 로드
@@ -206,10 +249,15 @@ export function PostFeed({ initialPosts = [] }: PostFeedProps) {
     );
   }
 
-  if (posts.length === 0 && !loading) {
+  if (posts.length === 0 && !loading && !error) {
     return (
       <div className="text-center py-8">
-        <p className="text-[#8e8e8e]">게시물이 없습니다.</p>
+        <p className="text-[#8e8e8e] mb-2">게시물이 없습니다.</p>
+        <p className="text-xs text-[#8e8e8e]">
+          더미 데이터를 생성하려면 Supabase SQL Editor에서 
+          <code className="bg-gray-100 px-1 rounded mx-1">supabase/seed-dummy-data.sql</code> 
+          파일을 실행하세요.
+        </p>
       </div>
     );
   }

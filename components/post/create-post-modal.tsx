@@ -179,12 +179,18 @@ export function CreatePostModal({ open, onOpenChange }: CreatePostModalProps) {
         .toString(36)
         .substring(7)}.${fileExt}`;
 
-      console.group('게시물 업로드 시작');
-      console.log('파일명:', fileName);
-      console.log('파일 크기:', `${(selectedFile.size / 1024 / 1024).toFixed(2)}MB`);
+      // 버킷 이름 가져오기 (환경 변수 또는 기본값)
+      const bucketName = process.env.NEXT_PUBLIC_STORAGE_BUCKET || 'posts';
 
+      if (process.env.NODE_ENV === 'development') {
+        console.group('게시물 업로드 시작');
+        console.log('파일명:', fileName);
+        console.log('파일 크기:', `${(selectedFile.size / 1024 / 1024).toFixed(2)}MB`);
+        console.log('버킷 이름:', bucketName);
+      }
+      
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('posts')
+        .from(bucketName)
         .upload(fileName, selectedFile, {
           cacheControl: '3600',
           upsert: false,
@@ -194,7 +200,9 @@ export function CreatePostModal({ open, onOpenChange }: CreatePostModalProps) {
         console.error('Storage 업로드 에러:', uploadError);
         
         // 에러 타입에 따른 구체적인 메시지
-        if (uploadError.message?.includes('duplicate') || uploadError.message?.includes('already exists')) {
+        if (uploadError.message?.includes('not found') || uploadError.message?.includes('Bucket not found')) {
+          throw new Error(`Storage 버킷 "${bucketName}"을 찾을 수 없습니다. Supabase Dashboard에서 버킷을 생성해주세요.`);
+        } else if (uploadError.message?.includes('duplicate') || uploadError.message?.includes('already exists')) {
           throw new Error('이미 같은 이름의 파일이 존재합니다. 잠시 후 다시 시도해주세요.');
         } else if (uploadError.message?.includes('size') || uploadError.message?.includes('limit')) {
           throw new Error('파일 크기가 너무 큽니다. 5MB 이하의 파일을 선택해주세요.');
@@ -210,7 +218,7 @@ export function CreatePostModal({ open, onOpenChange }: CreatePostModalProps) {
       // 2. Public URL 가져오기
       const {
         data: { publicUrl },
-      } = supabase.storage.from('posts').getPublicUrl(fileName);
+      } = supabase.storage.from(bucketName).getPublicUrl(fileName);
 
       console.log('Public URL:', publicUrl);
 
@@ -243,8 +251,10 @@ export function CreatePostModal({ open, onOpenChange }: CreatePostModalProps) {
       }
 
       const result = await response.json();
-      console.log('게시물 생성 성공:', result);
-      console.groupEnd();
+        if (process.env.NODE_ENV === 'development') {
+          console.log('게시물 생성 성공:', result);
+          console.groupEnd();
+        }
 
       // 4. 성공 시 모달 닫기 및 피드 새로고침
       handleClose();
@@ -279,11 +289,21 @@ export function CreatePostModal({ open, onOpenChange }: CreatePostModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-4xl w-full h-[90vh] p-0 flex flex-col overflow-hidden">
-        <DialogHeader className="px-6 py-4 border-b border-[#dbdbdb]">
-          <DialogTitle className="text-center text-lg font-semibold text-[#262626]">
+      <DialogContent
+        className="max-w-4xl w-full h-[90vh] p-0 flex flex-col overflow-hidden"
+      >
+        {/* 접근성을 위한 숨겨진 DialogTitle */}
+        <DialogTitle className="sr-only">
+          새 게시물 만들기
+        </DialogTitle>
+        
+        <DialogHeader className="px-6 py-4 border-b border-[#dbdbdb]/50 bg-gradient-to-r from-white to-[#fafafa]/50">
+          <h2 className="text-center text-lg font-semibold bg-gradient-to-r from-[#0095f6] to-[#833ab4] bg-clip-text text-transparent">
             새 게시물 만들기
-          </DialogTitle>
+          </h2>
+          <p className="sr-only">
+            이미지를 선택하고 캡션을 입력하여 새 게시물을 만듭니다.
+          </p>
         </DialogHeader>
 
         <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
@@ -346,8 +366,8 @@ export function CreatePostModal({ open, onOpenChange }: CreatePostModalProps) {
               <>
                 <div className="flex-1 p-4">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                      <span className="text-sm font-semibold text-[#262626]">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#0095f6] via-[#833ab4] to-[#fcb045] flex items-center justify-center shadow-soft ring-2 ring-white">
+                      <span className="text-sm font-semibold text-white">
                         {clerkUserId?.charAt(0).toUpperCase() || 'U'}
                       </span>
                     </div>
@@ -378,12 +398,12 @@ export function CreatePostModal({ open, onOpenChange }: CreatePostModalProps) {
                   </div>
                 )}
 
-                <div className="border-t border-[#dbdbdb] p-4">
+                <div className="border-t border-[#dbdbdb]/50 p-4 bg-gradient-to-r from-white to-[#fafafa]/50">
                   <Button
                     type="button"
                     onClick={handleUpload}
                     disabled={isUploading || !selectedFile}
-                    className="w-full bg-[#0095f6] hover:bg-[#0095f6]/90 text-white font-semibold disabled:opacity-50"
+                    className="w-full bg-gradient-to-r from-[#0095f6] to-[#0084d4] hover:from-[#0084d4] hover:to-[#0073c2] text-white font-semibold disabled:opacity-50 shadow-soft hover:shadow-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
                   >
                     {isUploading ? (
                       <>

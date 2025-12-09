@@ -82,7 +82,7 @@ export function PostCard({
     }
   }, [clerkUserId, supabase]);
 
-  // 메뉴 외부 클릭 시 닫기
+  // 메뉴 외부 클릭 시 닫기 및 키보드 네비게이션
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -90,12 +90,20 @@ export function PostCard({
       }
     };
 
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isMenuOpen) {
+        setIsMenuOpen(false);
+      }
+    };
+
     if (isMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscape);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
     };
   }, [isMenuOpen]);
 
@@ -206,14 +214,14 @@ export function PostCard({
   };
 
   return (
-    <article className="bg-white border border-[#dbdbdb] rounded-sm mb-4">
+    <article className="bg-white border border-[#dbdbdb]/50 rounded-xl mb-6 shadow-soft hover:shadow-medium transition-all duration-300 overflow-hidden">
       {/* 헤더 */}
-      <header className="flex items-center justify-between px-4 py-3 h-[60px]">
+      <header className="flex items-center justify-between px-4 py-3 h-[60px] bg-gradient-to-r from-white to-[#fafafa]/50">
         <div className="flex items-center gap-3">
           <Link href={`/profile/${post.user.id}`}>
-            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#0095f6] to-[#833ab4] flex items-center justify-center overflow-hidden shadow-soft hover:shadow-medium transition-shadow duration-200 ring-2 ring-white">
               {/* 프로필 이미지 (Clerk UserButton 사용 가능) */}
-              <span className="text-sm font-semibold text-[#262626]">
+              <span className="text-sm font-semibold text-white">
                 {post.user.name.charAt(0).toUpperCase()}
               </span>
             </div>
@@ -221,7 +229,7 @@ export function PostCard({
           <div>
             <Link
               href={`/profile/${post.user.id}`}
-              className="font-semibold text-[#262626] hover:opacity-70"
+              className="font-semibold text-[#262626] hover:text-[#0095f6] transition-colors duration-200"
             >
               {post.user.name}
             </Link>
@@ -233,18 +241,39 @@ export function PostCard({
         <div className="relative" ref={menuRef}>
           <button
             type="button"
-            className="p-1 text-[#262626] hover:opacity-70"
-            aria-label="더보기"
+            className="p-1 text-[#262626] hover:opacity-70 focus:outline-none focus:ring-2 focus:ring-[#0095f6] focus:ring-offset-2 rounded"
+            aria-label="더보기 메뉴"
+            aria-expanded={isMenuOpen}
+            aria-haspopup="true"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setIsMenuOpen(!isMenuOpen);
+              }
+            }}
           >
             <MoreHorizontal className="w-5 h-5" />
           </button>
           {isMenuOpen && isOwnPost && (
-            <div className="absolute right-0 top-8 bg-white border border-[#dbdbdb] rounded-md shadow-lg z-10 min-w-[160px]">
+            <div
+              className="absolute right-0 top-8 bg-white border border-[#dbdbdb] rounded-md shadow-lg z-10 min-w-[160px]"
+              role="menu"
+              aria-label="게시물 메뉴"
+            >
               <button
                 type="button"
-                className="w-full px-4 py-2 text-left text-sm text-[#ed4956] hover:bg-[#fafafa] flex items-center gap-2"
+                className="w-full px-4 py-2 text-left text-sm text-[#ed4956] hover:bg-[#fafafa] flex items-center gap-2 focus:outline-none focus:bg-[#fafafa]"
+                role="menuitem"
                 onClick={handleDelete}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleDelete();
+                  } else if (e.key === 'Escape') {
+                    setIsMenuOpen(false);
+                  }
+                }}
               >
                 <Trash2 className="w-4 h-4" />
                 삭제
@@ -256,14 +285,23 @@ export function PostCard({
 
       {/* 이미지 영역 */}
       <div
-        className="relative w-full aspect-square bg-gray-100 overflow-hidden cursor-pointer"
+        className="relative w-full aspect-square bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden cursor-pointer group"
         onDoubleClick={handleDoubleTap}
+        role="button"
+        tabIndex={0}
+        aria-label="이미지 더블탭으로 좋아요"
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleLike();
+          }
+        }}
       >
         <Image
           src={post.image_url}
-          alt={post.caption || '게시물 이미지'}
+          alt={post.caption || `${post.user.name}의 게시물 이미지`}
           fill
-          className="object-cover"
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
           sizes="630px"
           priority={false}
         />
@@ -281,36 +319,36 @@ export function PostCard({
       </div>
 
       {/* 액션 버튼 */}
-      <div className="flex items-center justify-between px-4 py-3 h-[48px]">
-        <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between px-4 py-3 h-[48px] bg-white">
+        <div className="flex items-center gap-5">
           <button
             type="button"
             onClick={handleLike}
-            className={`transition-transform duration-150 ${
+            className={`transition-all duration-200 ${
               isLiked ? 'text-[#ed4956]' : 'text-[#262626]'
-            } hover:opacity-70`}
+            } hover:scale-110 active:scale-95`}
             aria-label={isLiked ? '좋아요 취소' : '좋아요'}
             style={{
               animation: isLiked ? 'heartScale 0.3s ease-out' : 'none',
             }}
           >
             <Heart
-              className={`w-6 h-6 ${
-                isLiked ? 'fill-[#ed4956]' : ''
+              className={`w-6 h-6 transition-all duration-200 ${
+                isLiked ? 'fill-[#ed4956] drop-shadow-sm' : ''
               }`}
             />
           </button>
           <button
             type="button"
             onClick={() => onOpenModal?.(post.id)}
-            className="text-[#262626] hover:opacity-70"
+            className="text-[#262626] hover:text-[#0095f6] hover:scale-110 active:scale-95 transition-all duration-200"
             aria-label="댓글"
           >
             <MessageCircle className="w-6 h-6" />
           </button>
           <button
             type="button"
-            className="text-[#262626] hover:opacity-70"
+            className="text-[#262626] hover:text-[#0095f6] hover:scale-110 active:scale-95 transition-all duration-200"
             aria-label="공유"
           >
             <Send className="w-6 h-6" />
@@ -318,7 +356,7 @@ export function PostCard({
         </div>
         <button
           type="button"
-          className="text-[#262626] hover:opacity-70"
+          className="text-[#262626] hover:text-[#0095f6] hover:scale-110 active:scale-95 transition-all duration-200"
           aria-label="북마크"
         >
           <Bookmark className="w-6 h-6" />

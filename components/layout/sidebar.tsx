@@ -38,11 +38,14 @@ export function Sidebar() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   return (
-    <aside className="hidden md:flex md:flex-col md:fixed md:left-0 md:top-0 md:h-screen md:bg-white md:border-r md:border-[#dbdbdb] md:w-[72px] lg:w-[244px] z-10">
+    <aside className="hidden md:flex md:flex-col md:fixed md:left-0 md:top-0 md:h-screen md:bg-white md:border-r md:border-[#dbdbdb]/50 md:w-[72px] lg:w-[244px] z-10 backdrop-blur-sm bg-white/95">
       <div className="flex flex-col h-full pt-8 pb-4 px-3 lg:px-4">
         {/* 로고/브랜드 (Desktop만 표시) */}
         <div className="hidden lg:block mb-8 px-2">
-          <Link href="/" className="text-2xl font-bold text-[#262626]">
+          <Link
+            href="/"
+            className="text-2xl font-bold bg-gradient-to-r from-[#0095f6] to-[#833ab4] bg-clip-text text-transparent hover:opacity-80 transition-opacity"
+          >
             Instagram
           </Link>
         </div>
@@ -57,18 +60,20 @@ export function Sidebar() {
             const content = (
               <div
                 className={`
-                  flex items-center gap-4 px-3 py-2 rounded-lg
-                  transition-colors duration-200
+                  flex items-center gap-4 px-3 py-2.5 rounded-xl
+                  transition-all duration-200 ease-out
                   ${
                     isActive
-                      ? 'font-semibold text-[#262626]'
-                      : 'text-[#262626] hover:bg-[#fafafa]'
+                      ? 'font-semibold text-[#262626] bg-gradient-to-r from-[#fafafa] to-white shadow-soft'
+                      : 'text-[#262626] hover:bg-[#fafafa] hover:shadow-soft'
                   }
                 `}
               >
                 <Icon
-                  className={`w-6 h-6 ${
-                    isActive ? 'stroke-[2.5]' : 'stroke-2'
+                  className={`w-6 h-6 transition-transform duration-200 ${
+                    isActive
+                      ? 'stroke-[2.5] scale-105'
+                      : 'stroke-2 group-hover:scale-105'
                   }`}
                 />
                 <span className="hidden lg:inline text-base">

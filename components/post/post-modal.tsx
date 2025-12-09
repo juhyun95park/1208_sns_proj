@@ -21,6 +21,7 @@ import {
   Dialog,
   DialogContent,
   DialogOverlay,
+  DialogTitle,
 } from '@/components/ui/dialog';
 import {
   Heart,
@@ -97,7 +98,7 @@ export function PostModal({
     }
   }, [clerkUserId, supabase]);
 
-  // 메뉴 외부 클릭 시 닫기
+  // 메뉴 외부 클릭 시 닫기 및 키보드 네비게이션
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -105,12 +106,20 @@ export function PostModal({
       }
     };
 
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isMenuOpen) {
+        setIsMenuOpen(false);
+      }
+    };
+
     if (isMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscape);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
     };
   }, [isMenuOpen]);
 
@@ -333,6 +342,7 @@ export function PostModal({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogOverlay />
         <DialogContent className="max-w-4xl w-full h-[90vh] p-0 flex flex-col md:flex-row">
+          <DialogTitle className="sr-only">게시물 로딩 중</DialogTitle>
           <div className="flex items-center justify-center flex-1">
             <p className="text-[#8e8e8e]">로딩 중...</p>
           </div>
@@ -346,6 +356,7 @@ export function PostModal({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogOverlay />
         <DialogContent className="max-w-4xl w-full h-[90vh] p-0 flex flex-col md:flex-row">
+          <DialogTitle className="sr-only">게시물 오류</DialogTitle>
           <div className="flex items-center justify-center flex-1">
             <p className="text-[#ed4956]">{error || '게시물을 불러올 수 없습니다.'}</p>
           </div>
@@ -357,13 +368,18 @@ export function PostModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogOverlay />
-      <DialogContent className="max-w-4xl w-full h-[90vh] md:h-[90vh] h-screen md:h-[90vh] p-0 flex flex-col md:flex-row overflow-hidden md:rounded-lg rounded-none">
+      <DialogContent
+        className="max-w-4xl w-full h-[90vh] md:h-[90vh] h-screen md:h-[90vh] p-0 flex flex-col md:flex-row overflow-hidden md:rounded-lg rounded-none"
+      >
+        <DialogTitle className="sr-only">
+          {post.user.name}의 게시물
+        </DialogTitle>
         {/* Desktop: 좌측 이미지 영역 (50%) */}
         <div className="hidden md:flex md:w-1/2 bg-black items-center justify-center relative">
           <div className="relative w-full h-full">
             <Image
               src={post.image_url}
-              alt={post.caption || '게시물 이미지'}
+              alt={post.caption || `${post.user.name}의 게시물 이미지`}
               fill
               className="object-contain"
               sizes="50vw"
@@ -396,7 +412,7 @@ export function PostModal({
         <div className="md:hidden w-full aspect-square bg-black relative">
           <Image
             src={post.image_url}
-            alt={post.caption || '게시물 이미지'}
+            alt={post.caption || `${post.user.name}의 게시물 이미지`}
             fill
             className="object-contain"
             sizes="100vw"
@@ -439,18 +455,39 @@ export function PostModal({
               <div className="relative" ref={menuRef}>
                 <button
                   type="button"
-                  className="p-1 text-[#262626] hover:opacity-70"
-                  aria-label="더보기"
+                  className="p-1 text-[#262626] hover:opacity-70 focus:outline-none focus:ring-2 focus:ring-[#0095f6] focus:ring-offset-2 rounded"
+                  aria-label="더보기 메뉴"
+                  aria-expanded={isMenuOpen}
+                  aria-haspopup="true"
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setIsMenuOpen(!isMenuOpen);
+                    }
+                  }}
                 >
                   <MoreHorizontal className="w-5 h-5" />
                 </button>
                 {isMenuOpen && isOwnPost && (
-                  <div className="absolute right-0 top-8 bg-white border border-[#dbdbdb] rounded-md shadow-lg z-10 min-w-[160px]">
+                  <div
+                    className="absolute right-0 top-8 bg-white border border-[#dbdbdb] rounded-md shadow-lg z-10 min-w-[160px]"
+                    role="menu"
+                    aria-label="게시물 메뉴"
+                  >
                     <button
                       type="button"
-                      className="w-full px-4 py-2 text-left text-sm text-[#ed4956] hover:bg-[#fafafa] flex items-center gap-2"
+                      className="w-full px-4 py-2 text-left text-sm text-[#ed4956] hover:bg-[#fafafa] flex items-center gap-2 focus:outline-none focus:bg-[#fafafa]"
+                      role="menuitem"
                       onClick={handleDelete}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          handleDelete();
+                        } else if (e.key === 'Escape') {
+                          setIsMenuOpen(false);
+                        }
+                      }}
                     >
                       <Trash2 className="w-4 h-4" />
                       삭제
