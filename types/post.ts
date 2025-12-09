@@ -37,3 +37,22 @@ export interface PostsResponse {
   nextPage: number | null;
 }
 
+export interface CreateCommentRequest {
+  post_id: string;
+  content: string;
+}
+
+export interface CreateCommentResponse {
+  comment: CommentWithUser;
+}
+
+export interface PostDetailResponse {
+  post: PostWithStats;
+}
+
+export interface CommentsResponse {
+  comments: CommentWithUser[];
+  hasMore: boolean;
+  nextPage: number | null;
+}
+

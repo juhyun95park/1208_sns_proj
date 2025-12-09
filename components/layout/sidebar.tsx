@@ -12,10 +12,12 @@
 
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, Search, PlusSquare, User } from 'lucide-react';
 import { SignedIn, SignedOut } from '@clerk/nextjs';
+import { CreatePostModal } from '@/components/post/create-post-modal';
 
 interface NavItem {
   href: string;
@@ -33,6 +35,7 @@ const navItems: NavItem[] = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   return (
     <aside className="hidden md:flex md:flex-col md:fixed md:left-0 md:top-0 md:h-screen md:bg-white md:border-r md:border-[#dbdbdb] md:w-[72px] lg:w-[244px] z-10">
@@ -80,10 +83,7 @@ export function Sidebar() {
                   <button
                     type="button"
                     className="w-full text-left"
-                    onClick={() => {
-                      // TODO: 게시물 작성 모달 열기 (1-3 단계에서 구현)
-                      console.log('게시물 작성 모달 열기');
-                    }}
+                    onClick={() => setIsCreateModalOpen(true)}
                   >
                     {content}
                   </button>
@@ -109,6 +109,12 @@ export function Sidebar() {
           })}
         </nav>
       </div>
+
+      {/* 게시물 작성 모달 */}
+      <CreatePostModal
+        open={isCreateModalOpen}
+        onOpenChange={setIsCreateModalOpen}
+      />
     </aside>
   );
 }

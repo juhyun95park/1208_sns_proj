@@ -25,15 +25,23 @@ export async function GET(
       );
     }
 
+    const searchParams = request.nextUrl.searchParams;
+    const limit = parseInt(searchParams.get('limit') || '2', 10);
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const offset = (page - 1) * limit;
+
     const supabase = createClerkSupabaseClient();
 
-    // 최신 댓글 2개 조회
+    // 댓글 조회 (페이지네이션)
+    // 모달에서는 오래된 순으로, PostCard에서는 최신순으로
+    // 기본값은 최신순 (PostCard 호환성)
+    const orderAscending = searchParams.get('order') === 'asc';
     const { data: comments, error: commentsError } = await supabase
       .from('comments')
       .select('id, post_id, user_id, content, created_at')
       .eq('post_id', postId)
-      .order('created_at', { ascending: false })
-      .limit(2);
+      .order('created_at', { ascending: orderAscending })
+      .range(offset, offset + limit - 1);
 
     if (commentsError) {
       console.error('Error fetching comments:', commentsError);
@@ -43,8 +51,22 @@ export async function GET(
       );
     }
 
+    // 전체 댓글 수 확인 (hasMore 판단용)
+    const { count } = await supabase
+      .from('comments')
+      .select('*', { count: 'exact', head: true })
+      .eq('post_id', postId);
+
+    const totalComments = count || 0;
+    const hasMore = offset + limit < totalComments;
+    const nextPage = hasMore ? page + 1 : null;
+
     if (!comments || comments.length === 0) {
-      return NextResponse.json<CommentWithUser[]>([]);
+      return NextResponse.json({
+        comments: [],
+        hasMore: false,
+        nextPage: null,
+      });
     }
 
     // 사용자 정보 조회
@@ -81,7 +103,11 @@ export async function GET(
       };
     });
 
-    return NextResponse.json<CommentWithUser[]>(commentsWithUsers);
+    return NextResponse.json({
+      comments: commentsWithUsers,
+      hasMore,
+      nextPage,
+    });
   } catch (error) {
     console.error('Error in GET /api/posts/[postId]/comments:', error);
     return NextResponse.json(

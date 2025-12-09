@@ -15,6 +15,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { PostCard } from './post-card';
 import { PostCardSkeleton } from './post-card-skeleton';
+import { PostModal } from './post-modal';
 import type { PostWithStats, CommentWithUser } from '@/types/post';
 
 interface PostFeedProps {
@@ -30,7 +31,73 @@ export function PostFeed({ initialPosts = [] }: PostFeedProps) {
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(initialPosts.length > 0 ? 2 : 1);
   const [error, setError] = useState<string | null>(null);
+  const [modalPostId, setModalPostId] = useState<string | null>(null);
+  const [modalPost, setModalPost] = useState<PostWithStats | null>(null);
   const observerTarget = useRef<HTMLDivElement>(null);
+
+  // 댓글 추가 핸들러
+  const handleCommentAdded = useCallback(
+    (postId: string, comment: CommentWithUser) => {
+      setCommentsMap((prev) => ({
+        ...prev,
+        [postId]: [comment, ...(prev[postId] || [])],
+      }));
+
+      // 게시물의 comments_count 업데이트
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId
+            ? { ...p, comments_count: p.comments_count + 1 }
+            : p
+        )
+      );
+    },
+    []
+  );
+
+  // 댓글 삭제 핸들러
+  const handleCommentDeleted = useCallback((postId: string, commentId: string) => {
+    setCommentsMap((prev) => ({
+      ...prev,
+      [postId]: (prev[postId] || []).filter((c) => c.id !== commentId),
+    }));
+
+    // 게시물의 comments_count 업데이트
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id === postId
+          ? { ...p, comments_count: Math.max(0, p.comments_count - 1) }
+          : p
+      )
+    );
+  }, []);
+
+  // 모달 열기 핸들러
+  const handleOpenModal = useCallback((postId: string) => {
+    const post = posts.find((p) => p.id === postId);
+    setModalPost(post || null);
+    setModalPostId(postId);
+  }, [posts]);
+
+  // 모달 닫기 핸들러
+  const handleCloseModal = useCallback(() => {
+    setModalPostId(null);
+    setModalPost(null);
+  }, []);
+
+  // 게시물 삭제 핸들러
+  const handlePostDeleted = useCallback(
+    (deletedPostId: string) => {
+      // 삭제된 게시물을 목록에서 제거
+      setPosts((prev) => prev.filter((p) => p.id !== deletedPostId));
+
+      // 모달이 열려있으면 닫기
+      if (modalPostId === deletedPostId) {
+        handleCloseModal();
+      }
+    },
+    [modalPostId, handleCloseModal]
+  );
 
   // 댓글 로드 함수
   const loadComments = useCallback(async (postId: string) => {
@@ -154,8 +221,33 @@ export function PostFeed({ initialPosts = [] }: PostFeedProps) {
           key={post.id}
           post={post}
           comments={commentsMap[post.id] || []}
+          onCommentAdded={(comment) => handleCommentAdded(post.id, comment)}
+          onCommentDeleted={(commentId) =>
+            handleCommentDeleted(post.id, commentId)
+          }
+          onOpenModal={handleOpenModal}
+          onPostDeleted={handlePostDeleted}
         />
       ))}
+
+      {/* 게시물 상세 모달 */}
+      {modalPostId && (
+        <PostModal
+          postId={modalPostId}
+          open={!!modalPostId}
+          onOpenChange={(open) => {
+            if (!open) handleCloseModal();
+          }}
+          initialPost={modalPost || undefined}
+          allPosts={posts}
+          onNavigate={(newPostId) => {
+            const newPost = posts.find((p) => p.id === newPostId);
+            setModalPost(newPost || null);
+            setModalPostId(newPostId);
+          }}
+          onPostDeleted={handlePostDeleted}
+        />
+      )}
 
       {/* 로딩 스켈레톤 */}
       {loading && (
